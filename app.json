@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "pocapp",
-    "slug": "pocapp",
+    "name": "poc96",
+    "slug": "poc96",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -36,7 +36,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "06ce4f55-3663-4f7b-9788-a2edcce9bcdb"
+        "projectId": "d705adbb-cba9-44ad-9d6e-edbcacfe7ea9"
       }
     }
   }
