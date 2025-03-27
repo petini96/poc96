@@ -1,11 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View, Text, Image, FlatList, TouchableOpacity, Button } from "react-native";
+import { StyleSheet, View, Text, Image, FlatList, TouchableOpacity, Button, Alert } from "react-native";
 import { useEffect, useState, useCallback } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useHookExample } from "../hooks/useHookExample";
 import { getPosts, PostResponse } from "../services/PostService";
 import { MaterialIcons } from "@expo/vector-icons";
 import Logo from "../assets/logo.svg";
+import NetInfo from '@react-native-community/netinfo';
+import { useNetworkStatus } from "../hooks/useNetworkStatus";
 
 type RootStackParamList = {
     Home: undefined;
@@ -21,7 +23,15 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+    const { isConnected, connectionType } = useNetworkStatus();
+
     const fetchPosts = useCallback(async () => {
+        const netInfoState = await NetInfo.fetch();
+        if (!netInfoState.isConnected) {
+            Alert.alert('Sem Conexão', 'Carregando dados offline');
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
@@ -43,12 +53,29 @@ export default function Home() {
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () => (
-                <TouchableOpacity onPress={fetchPosts} style={styles.headerLeft}>
-                    <Logo width={30} height={30} />
-                </TouchableOpacity>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity onPress={fetchPosts} style={styles.headerLeft}>
+                        <Logo width={30} height={30} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            Alert.alert(
+                                'Status de Conexão',
+                                `Conectado: ${isConnected ? 'Sim' : 'Não'}
+Tipo de Conexão: ${connectionType || 'Desconhecido'}`
+                            );
+                        }}
+                    >
+                        <MaterialIcons
+                            name={isConnected ? "wifi" : "wifi-off"}
+                            size={24}
+                            color={isConnected ? "green" : "red"}
+                        />
+                    </TouchableOpacity>
+                </View>
             ),
         });
-    }, [navigation, fetchPosts]);
+    }, [navigation, fetchPosts, isConnected, connectionType]);
 
     if (loading) {
         return (
@@ -181,5 +208,11 @@ const styles = StyleSheet.create({
         color: "#fff",
         marginLeft: 10,
         fontSize: 16,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
     },
 });
